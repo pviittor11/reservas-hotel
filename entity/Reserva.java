@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
 
-
 @Table(name = "reserva")
 @Entity(name = "Reserva")
 @EqualsAndHashCode(of = "id")
@@ -23,8 +22,4 @@ public class Reserva {
     private int quartoId;
     private int hotelId;
     private String status;
-
-
-
-
 }

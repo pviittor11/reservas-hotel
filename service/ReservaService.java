@@ -40,6 +40,12 @@ public class ReservaService {
     public Reserva criarReserva(Reserva reserva) {
         LocalDate checkIn = reserva.getCheckIn();
         LocalDate checkOut = reserva.getCheckOut();
+        int quartoId = reserva.getQuartoId();
+        int hotelId = reserva.getHotelId();
+
+        if (reservaRepository.reservasDuplicadas(quartoId, hotelId, checkIn)) {
+            throw new ReservaDuplicadaException("Já existe uma reserva para o mesmo quarto, hotel e data.");
+        }
 
         if (checkOut.isBefore(checkIn)) {
             throw new IllegalArgumentException("A data de check-out não pode ser antes da data de check-in.");

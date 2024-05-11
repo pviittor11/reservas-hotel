@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,21 @@ import java.util.List;
 public class ReservaController {
 
     private final ReservaService reservaService;
+
+    @PostMapping("/atualizar-reservas")
+    @Operation(summary = "Atualizar reservas ativas para concluídas", description = "Atualiza o status das reservas ativas cujo checkout ocorre antes da data atual para 'concluída'")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Reservas atualizadas com sucesso"),
+            @ApiResponse(responseCode = "500", description = "Erro ao atualizar reservas")
+    })
+    public ResponseEntity<String> atualizarReservas() {
+        try {
+            reservaService.marcarReservasAtivasComoConcluidasAPartirDeHoje();
+            return ResponseEntity.ok("Reservas atualizadas com sucesso para 'concluída'");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao atualizar reservas: " + e.getMessage());
+        }
+    }
 
     @GetMapping
     public ResponseEntity<List<ReservaResponseDto>> getAll() {
@@ -64,12 +80,4 @@ public class ReservaController {
         Reserva novaReserva = reservaService.criarReserva(ReservaMapper.toReserva(reservaCreateDto));
         return ResponseEntity.status(HttpStatus.CREATED).body("Reserva criada com sucesso! ID: " + novaReserva.getId());
     }
-
-
-    /*@PostMapping
-    public ResponseEntity<String> criarReserva(@RequestBody ReservaResponseDto reservaResponseDto) {
-        ReservaResponseDto reserva = reservaService.criarReserva(reservaResponseDto);
-        return new ResponseEntity<>("Reserva criada com sucesso!ID: " + reserva.getHotelId(), HttpStatus.CREATED);
-
-    }*/
 }

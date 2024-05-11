@@ -4,11 +4,14 @@ import com.example.demohotelreservasapi.entity.Reserva;
 import com.example.demohotelreservasapi.repository.ReservaRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDate;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -26,11 +29,12 @@ public class ReservaService {
     }
 
     @Transactional(readOnly = true)
-    public Reserva buscarPorId(int id){
+    public Reserva buscarPorId(int id) {
         return reservaRepository.findById(id).orElseThrow(
                 () -> new EntityNotFoundException(String.format("Reserva id=%s não encontrado", id))
         );
     }
+
     @Transactional
     public List<Reserva> buscarPorStatus(String status) {
         return reservaRepository.findByStatus(status);
@@ -53,5 +57,15 @@ public class ReservaService {
 
         reserva.setStatus("ativa");
         return reservaRepository.save(reserva);
+    }
+    public void marcarReservasAtivasComoConcluidasAPartirDeHoje() {
+        LocalDate hoje = LocalDate.now();
+        List<Reserva> reservasCheckOutAntesDeHoje = reservaRepository.findByStatusAndCheckOutBefore("ativa", hoje);
+
+        List<Integer> reservaIds = reservasCheckOutAntesDeHoje.stream().map(Reserva::getId).collect(Collectors.toList());
+
+        if (!reservaIds.isEmpty()) {
+            reservaRepository.marcarReservasComoConcluidas(reservaIds);
+        }
     }
 }
